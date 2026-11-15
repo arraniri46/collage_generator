@@ -1,22 +1,24 @@
 import 'package:flutter/foundation.dart';
 
 import '../core/models/brand_profile.dart';
+import '../core/services/local_storage_service.dart';
 
-/// Global registry of institution profiles.
+/// Global registry of institution profiles, persisted locally.
 ///
-/// Phase 1: in-memory with a seeded sample profile so UI development can
-/// proceed immediately. Persistence arrives in phase 4.
+/// On first launch (empty storage) it seeds two sample profiles so the UI
+/// has sensible content; afterwards everything is loaded from storage.
 class ProfileProvider extends ChangeNotifier {
-  ProfileProvider() {
-    _profiles
-      ..add(_sampleProfileKemenkum())
-      ..add(_sampleProfileDinas());
-  }
+  ProfileProvider(this._storage);
+
+  final LocalStorageService _storage;
 
   final List<BrandProfile> _profiles = [];
   String? _activeProfileId;
+  bool _loaded = false;
 
   List<BrandProfile> get profiles => List.unmodifiable(_profiles);
+
+  bool get isLoaded => _loaded;
 
   BrandProfile? get activeProfile {
     for (final p in _profiles) {
@@ -33,8 +35,28 @@ class ProfileProvider extends ChangeNotifier {
     return null;
   }
 
+  /// Loads profiles from storage; seeds samples on first launch.
+  Future<void> load() async {
+    final stored = _storage.loadProfiles();
+    if (stored.isEmpty) {
+      _profiles
+        ..clear()
+        ..add(_sampleProfileKemenkum())
+        ..add(_sampleProfileDinas());
+      await _storage.saveProfiles(_profiles);
+    } else {
+      _profiles
+        ..clear()
+        ..addAll(stored);
+    }
+    _activeProfileId = _storage.loadActiveProfileId();
+    _loaded = true;
+    notifyListeners();
+  }
+
   void setActive(String id) {
     _activeProfileId = id;
+    _storage.saveActiveProfileId(id);
     notifyListeners();
   }
 
@@ -45,6 +67,7 @@ class ProfileProvider extends ChangeNotifier {
     } else {
       _profiles.add(profile);
     }
+    _storage.saveProfiles(_profiles);
     notifyListeners();
   }
 
@@ -52,7 +75,9 @@ class ProfileProvider extends ChangeNotifier {
     _profiles.removeWhere((p) => p.id == id);
     if (_activeProfileId == id) {
       _activeProfileId = _profiles.isEmpty ? null : _profiles.first.id;
+      _storage.saveActiveProfileId(_activeProfileId);
     }
+    _storage.saveProfiles(_profiles);
     notifyListeners();
   }
 
@@ -84,3 +109,4 @@ class ProfileProvider extends ChangeNotifier {
         namaTtd: 'Contoh Nama Penandatangan',
       );
 }
+

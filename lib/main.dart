@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/services/local_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/editor/poster_preview_screen.dart';
 import 'features/home/history_tab.dart';
@@ -10,19 +12,27 @@ import 'features/profile/profile_tab.dart';
 import 'providers/profile_provider.dart';
 import 'providers/report_provider.dart';
 
-void main() {
-  runApp(const CollageGeneratorApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  runApp(CollageGeneratorApp(storage: LocalStorageService(prefs)));
 }
 
 final class CollageGeneratorApp extends StatelessWidget {
-  const CollageGeneratorApp({super.key});
+  const CollageGeneratorApp({super.key, required this.storage});
+
+  final LocalStorageService storage;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
-        ChangeNotifierProvider(create: (_) => ReportProvider()),
+        ChangeNotifierProvider(
+          create: (_) => ProfileProvider(storage)..load(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ReportProvider(storage)..load(),
+        ),
       ],
       child: MaterialApp(
         title: 'Collage Generator',
