@@ -46,4 +46,5 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
-a4.txt\nt4.txt
+a4.txt
+t4.txt
