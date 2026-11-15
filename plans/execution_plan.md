@@ -57,6 +57,15 @@
 - [ ] Halaman Setup Laporan: pilih profile, judul, tanggal (date picker, auto hari:
   "Rabu, 11 November 2026" via `intl`), rasio (1:1 / 4:5), jumlah foto (chips)
 
+### Fase 2b — Home & Bottom Navigation (2026-11-15)
+- [x] `HomeShell` (Material 3 `NavigationBar`) dengan 3 tab: Beranda / Riwayat / Profile via `IndexedStack`
+- [x] Beranda: hero header navy (logo + nama unit aktif), CTA "Buat Laporan Baru" → SetupScreen, kartu statistik, kartu tips
+- [x] Riwayat: empty state placeholder (terisi di fase persistence)
+- [x] Profile: daftar `ProfileProvider` (list-only; CRUD di fase berikutnya)
+- [x] FAB "Lanjut Draft" muncul bila `report.templateId != null` → langsung ke PosterPreviewScreen
+- [x] `main.dart`: home menjadi `HomeShell`; `flutter analyze` bersih, 10/10 test lulus
+
+### Fase 3 — Editor Foto
 ### Fase 3 — Editor Foto
 - [ ] Tap slot kosong → bottom sheet "Galeri / Kamera" (`image_picker`)
 - [ ] Foto terisi: pan & zoom per slot (`InteractiveViewer`, cover fit, `ClipRRect`)

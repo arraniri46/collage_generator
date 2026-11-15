@@ -157,6 +157,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // From home, open the setup screen via the primary CTA.
+    await tester.tap(find.text('Buat Laporan Baru'));
+    await tester.pumpAndSettle();
+
     // Pick 8 photos.
     await tester.tap(find.text('8'));
     await tester.pumpAndSettle();
@@ -174,10 +178,35 @@ void main() {
     expect(find.text('LAPORAN ATENSI'), findsOneWidget);
   });
 
-  testWidgets('App builds and shows setup screen', (tester) async {
-    await tester.pumpWidget(const CollageGeneratorApp());
+  testWidgets('App builds and shows home with bottom navigation',
+      (tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ProfileProvider()),
+          ChangeNotifierProvider(create: (_) => ReportProvider()),
+        ],
+        child: const CollageGeneratorApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Buat Laporan'), findsOneWidget);
+    // Home tab is shown by default.
+    expect(find.text('Buat Laporan Baru'), findsOneWidget);
+    // Bottom navigation destinations are present ("Profile" also appears
+    // as the info card label on home, so allow multiple matches).
+    expect(find.text('Beranda'), findsOneWidget);
+    expect(find.text('Riwayat'), findsOneWidget);
+    expect(find.text('Profile'), findsWidgets);
+
+    // Switch to the history tab (empty state).
+    await tester.tap(find.text('Riwayat'));
+    await tester.pumpAndSettle();
+    expect(find.text('Belum ada laporan tersimpan'), findsOneWidget);
+
+    // Switch to the profile tab (sample profiles).
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('Profile Instansi'), findsOneWidget);
   });
 }
