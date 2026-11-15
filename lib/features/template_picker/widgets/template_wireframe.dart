@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/collage_template.dart';
+import '../../../core/theme/app_theme.dart';
 
-/// Renders a grey wireframe preview of a [CollageTemplate] — used in the
-/// template picker (and reusable for the poster canvas in the next phase).
+/// Renders a wireframe preview of a [CollageTemplate] — used in the
+/// template picker. Selected state adds golden accent borders on slots.
 final class TemplateWireframe extends StatelessWidget {
   const TemplateWireframe({
     super.key,
     required this.template,
-    this.color = const Color(0xFFB9C4D0),
-    this.backgroundColor = const Color(0xFFF3F5F8),
+    required this.selected,
+    this.color = AppColors.outline,
+    this.backgroundColor = AppColors.surfaceVariant,
     this.showHeaderFooter = true,
   });
 
   final CollageTemplate template;
+
+  /// Whether this template is currently selected (golden accent).
+  final bool selected;
   final Color color;
   final Color backgroundColor;
 
@@ -42,6 +47,8 @@ final class TemplateWireframe extends StatelessWidget {
               painter: _WireframePainter(
                 slots: template.slots,
                 color: color,
+                accentColor: AppColors.accent,
+                selected: selected,
                 gap: gap,
                 headerH: showHeaderFooter ? headerH : 0,
                 footerH: showHeaderFooter ? footerH : 0,
@@ -61,6 +68,8 @@ class _WireframePainter extends CustomPainter {
   _WireframePainter({
     required this.slots,
     required this.color,
+    required this.accentColor,
+    required this.selected,
     required this.gap,
     required this.headerH,
     required this.footerH,
@@ -70,6 +79,8 @@ class _WireframePainter extends CustomPainter {
 
   final List<TemplateSlot> slots;
   final Color color;
+  final Color accentColor;
+  final bool selected;
   final double gap;
   final double headerH;
   final double footerH;
@@ -78,9 +89,14 @@ class _WireframePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
+    final fillPaint = Paint()
+      ..color = selected ? color.withValues(alpha: 0.55) : color
       ..style = PaintingStyle.fill;
+
+    final accentPaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.012;
 
     final radius = Radius.circular(size.width * 0.012);
 
@@ -101,7 +117,7 @@ class _WireframePainter extends CustomPainter {
       final rect = Rect.fromLTWH(
         r.left * size.width,
         gridTop + r.top * gridH,
-        r.width * size.width - gap * 0, // slots already include internal gaps
+        r.width * size.width,
         r.height * gridH,
       );
       final deflated = Rect.fromLTRB(
@@ -110,10 +126,11 @@ class _WireframePainter extends CustomPainter {
         rect.right - gap / 2,
         rect.bottom - gap / 2,
       );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(deflated, radius),
-        paint,
-      );
+      final rrect = RRect.fromRectAndRadius(deflated, radius);
+      canvas.drawRRect(rrect, fillPaint);
+      if (selected) {
+        canvas.drawRRect(rrect, accentPaint);
+      }
     }
 
     // Footer zone bar.
@@ -137,5 +154,7 @@ class _WireframePainter extends CustomPainter {
   bool shouldRepaint(covariant _WireframePainter oldDelegate) =>
       oldDelegate.slots != slots ||
       oldDelegate.color != color ||
+      oldDelegate.selected != selected ||
       oldDelegate.gap != gap;
 }
+

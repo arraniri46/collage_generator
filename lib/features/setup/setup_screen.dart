@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/models/collage_report.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/date_formatter_id.dart';
+import '../../core/widgets/brand_logo.dart';
+import '../../core/widgets/section_header.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/report_provider.dart';
 import '../template_picker/template_picker_screen.dart';
@@ -53,7 +55,15 @@ class _SetupScreenState extends State<SetupScreen> {
     final profiles = context.watch<ProfileProvider>().profiles;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat Laporan')),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            const BrandLogo(size: 32),
+            const SizedBox(width: AppSpacing.sm),
+            const Text('Buat Laporan'),
+          ],
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
@@ -102,8 +112,7 @@ class _SetupScreenState extends State<SetupScreen> {
           const SizedBox(height: AppSpacing.xl),
 
           // Canvas ratio
-          Text('Rasio Poster',
-              style: Theme.of(context).textTheme.titleSmall),
+          const SectionHeader('Rasio Poster'),
           const SizedBox(height: AppSpacing.sm),
           SegmentedButton<CanvasRatio>(
             segments: CanvasRatio.values
@@ -119,8 +128,7 @@ class _SetupScreenState extends State<SetupScreen> {
           const SizedBox(height: AppSpacing.xl),
 
           // Photo count
-          Text('Jumlah Foto',
-              style: Theme.of(context).textTheme.titleSmall),
+          const SectionHeader('Jumlah Foto'),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,

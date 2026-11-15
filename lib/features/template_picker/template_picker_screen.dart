@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/data/templates/template_registry.dart';
-import '../../core/theme/app_theme.dart';
-import '../../providers/report_provider.dart';
+import '../../../core/data/templates/template_registry.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/brand_logo.dart';
+import '../../../providers/report_provider.dart';
 import 'widgets/template_wireframe.dart';
 
 /// Step 2 of the flow: pick a layout template, filtered by photo count.
@@ -18,7 +19,13 @@ final class TemplatePickerScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pilih Template (${report.slots.length} foto)'),
+        title: Row(
+          children: [
+            const BrandLogo(size: 32),
+            const SizedBox(width: AppSpacing.sm),
+            Text('Pilih Template (${report.slots.length} foto)'),
+          ],
+        ),
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -39,7 +46,10 @@ final class TemplatePickerScreen extends StatelessWidget {
               context.read<ReportProvider>().selectTemplate(template);
               Navigator.of(context).pop();
             },
-            child: TemplateWireframe(template: template),
+            child: TemplateWireframe(
+              template: template,
+              selected: selected,
+            ),
           );
         },
       ),
