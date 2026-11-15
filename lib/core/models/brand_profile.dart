@@ -12,7 +12,7 @@ final class BrandProfile {
     required this.namaUnit,
     this.logoPath,
     this.websiteUrl = '',
-    this.warnaBrand = const Color(0xFF1B3A6B),
+    this.warnaBrand = const Color(0xFF1B2C5D),
     // Caption configuration (auto-filled sections of the report caption)
     this.judulCaption = 'LAPORAN ATENSI PIMPINAN',
     this.kepadaYth = '',
@@ -135,7 +135,7 @@ final class BrandProfile {
         namaUnit: json['namaUnit'] as String,
         logoPath: json['logoPath'] as String?,
         websiteUrl: json['websiteUrl'] as String? ?? '',
-        warnaBrand: Color(json['warnaBrand'] as int? ?? 0xFF1B3A6B),
+        warnaBrand: Color(json['warnaBrand'] as int? ?? 0xFF1B2C5D),
         judulCaption:
             json['judulCaption'] as String? ?? 'LAPORAN ATENSI PIMPINAN',
         kepadaYth: json['kepadaYth'] as String? ?? '',
