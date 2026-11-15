@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/caption_builder.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/report_provider.dart';
+import '../caption/caption_editor_screen.dart';
 import 'widgets/poster_canvas.dart';
 
 /// Final screen of the flow: renders the finished poster, previews the
@@ -33,7 +34,22 @@ class _ExportScreenState extends State<ExportScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
-      appBar: AppBar(title: const Text('Export & Share')),
+      appBar: AppBar(
+        title: const Text('Export & Share'),
+        actions: [
+          IconButton(
+            tooltip: 'Edit Caption',
+            icon: const Icon(Icons.edit_note_rounded),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const CaptionEditorScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),

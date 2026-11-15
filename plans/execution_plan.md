@@ -101,7 +101,7 @@
   via `DateFormatterId`, blok Ttd (kota, jabatan, nama).
 
 ### Fase 6 — Editor Caption
-- [ ] Halaman Editor Caption (form accordion):
+- [x] Halaman Editor Caption (form accordion):
   - 🔒 Header & Tembusan (auto dari profile, readonly)
   - I. Kegiatan → 1 text field
   - II. Peserta → list dinamis (add/remove/reorder)
@@ -109,8 +109,8 @@
   - IV. Uraian Kegiatan → **1 text area, paste sekali → auto-split per poin:
     buang penomoran lama (1. / 2) / - / •), gabung baris terwrap, re-number otomatis**
   - 🔒 V. Penutup & Ttd (auto dari profile)
-- [ ] Live preview caption + tombol "Salin Caption Lengkap"
-- [ ] Tombol "Duplikat dari Laporan Terakhir" (copy draft, ubah field dinamis saja)
+- [x] Live preview caption + tombol "Salin Caption Lengkap"
+- [x] Tombol "Duplikat dari Laporan Terakhir" (copy draft, ubah field dinamis saja)
 
 ### Fase 7 (Opsional / Lanjutan)
 - [ ] Pengaturan: default rasio, kualitas export, hapus riwayat

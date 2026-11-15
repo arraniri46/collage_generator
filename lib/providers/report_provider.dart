@@ -143,6 +143,18 @@ class ReportProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Copies the dynamic caption fields (kegiatan, peserta, waktu, tempat,
+  /// uraian) from the most recent history entry into the current draft.
+  /// Static parts (header/footer) stay driven by the active profile.
+  void duplicateFromLastReport() {
+    if (_history.isEmpty) return;
+    _report = _report.copyWith(
+      caption: _history.first.caption,
+    );
+    _persist();
+    notifyListeners();
+  }
+
   // --- Photo editor ---
 
   /// Sets the photo of a slot (resetting its transform) from the picker.
