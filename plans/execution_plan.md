@@ -85,16 +85,20 @@
 - [ ] Splash: cek profile ada → redirect Home / setup profile pertama
 
 ### Fase 5 — Export & Share
-- [ ] Halaman Preview & Export: poster full-screen
-- [ ] Render PNG via `screenshot` (1080px+, bisa 2160p)
-- [ ] Simpan ke galeri (`image_gallery_saver_plus`/`gal`) + `permission_handler`
-- [ ] Share Sheet (bottom sheet):
+- [x] Halaman Export & Share: poster preview (render 400px → PNG 3x ≈ 1200px)
+- [x] Render PNG via `screenshot` (ScreenshotController + pixelRatio 3.0)
+- [x] Share via `share_plus` `Share.shareXFiles` (share sheet OS — sekaligus
+  menyimpan ke galeri/Files; `permission_handler` tersedia bila perlu storage eksplisit)
+- [x] Share Sheet (bottom sheet):
   - 📤 **Share Poster + Caption** → caption auto-copy ke clipboard + share gambar
-    → snackbar "✓ Caption tersalin, paste di chat WA"
+    → snackbar "✓ Caption tersalin, poster siap dibagikan"
   - 📋 Salin Caption saja
   - 🖼️ Share Poster saja
-- [ ] Renderer caption: compose string otomatis —
-  penomoran romawi I–V, penomoran item, emoji 📌⏰📍, hari/tanggal auto dari `tanggalLaporan`
+- [x] Renderer caption `CaptionBuilder`: compose string otomatis — header +
+  tembusan dari profile, penomoran romawi I–V, penomoran item (uraianRaw
+  auto-split: buang penomoran lama "1. / 2) / - / •", gabung baris terwrap,
+  re-number otomatis), emoji-less III hari/tanggal auto dari `tanggalLaporan`
+  via `DateFormatterId`, blok Ttd (kota, jabatan, nama).
 
 ### Fase 6 — Editor Caption
 - [ ] Halaman Editor Caption (form accordion):

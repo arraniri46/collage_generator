@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/report_provider.dart';
 import 'photo_picker_service.dart';
 import 'poster_preview_screen.dart';
+import 'export_screen.dart';
 import 'widgets/editor_slot.dart';
 import '../template_picker/template_picker_screen.dart';
 
@@ -252,12 +253,9 @@ class _EditorScreenState extends State<EditorScreen> {
                   ),
                 ),
                 onContinue: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Semua foto terisi — lanjut ke caption & share '
-                        'di fase berikutnya',
-                      ),
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ExportScreen(),
                     ),
                   );
                 },
