@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../providers/profile_provider.dart';
 import '../../../providers/report_provider.dart';
+import 'editor_screen.dart';
 import 'widgets/poster_canvas.dart';
 
 /// Shows the rendered poster (header + grid placeholders + footer) after
@@ -40,10 +41,8 @@ final class PosterPreviewScreen extends StatelessWidget {
             icon: const Icon(Icons.edit_rounded),
             label: const Text('Lanjut Isi Foto (Editor)'),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Editor foto akan hadir di fase berikutnya'),
-                ),
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const EditorScreen()),
               );
             },
           ),
