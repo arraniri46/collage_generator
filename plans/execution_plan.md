@@ -66,11 +66,10 @@
 - [x] `main.dart`: home menjadi `HomeShell`; `flutter analyze` bersih, 10/10 test lulus
 
 ### Fase 3 — Editor Foto
-### Fase 3 — Editor Foto
-- [ ] Tap slot kosong → bottom sheet "Galeri / Kamera" (`image_picker`)
-- [ ] Foto terisi: pan & zoom per slot (`InteractiveViewer`, cover fit, `ClipRRect`)
-- [ ] Swap foto antar slot (mode tukar)
-- [ ] Toolbar editor: Ganti Template, Swap, Reset, Preview
+- [x] Tap slot kosong → bottom sheet "Galeri / Kamera" (`image_picker`)
+- [x] Foto terisi: pan & zoom per slot (`InteractiveViewer`, cover fit, `ClipRRect`)
+- [x] Swap foto antar slot (mode tukar)
+- [x] Toolbar editor: Ganti Template, Swap, Reset, Preview
 - [ ] (Opsional) atur gap & outer margin
 
 ### Fase 4 — Profile Instansi & Penyimpanan

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'dart:ui' show Offset;
 
 import '../core/data/templates/template_registry.dart';
 import '../core/models/collage_report.dart';
@@ -66,6 +67,68 @@ class ReportProvider extends ChangeNotifier {
     _report = _report.copyWith(caption: caption);
     notifyListeners();
   }
+
+  // --- Photo editor ---
+
+  /// Sets the photo of a slot (resetting its transform) from the picker.
+  void setSlotPhoto(int index, String path) {
+    final slots = [..._report.slots];
+    if (index < 0 || index >= slots.length) return;
+    slots[index] = slots[index].copyWith(
+      fotoPath: path,
+      offset: Offset.zero,
+      scale: 1.0,
+    );
+    _report = _report.copyWith(slots: slots);
+    notifyListeners();
+  }
+
+  /// Persists pan/zoom transform of a slot's photo.
+  void updateSlotTransform(int index, Offset offset, double scale) {
+    final slots = [..._report.slots];
+    if (index < 0 || index >= slots.length) return;
+    slots[index] = slots[index].copyWith(offset: offset, scale: scale);
+    _report = _report.copyWith(slots: slots);
+    notifyListeners();
+  }
+
+  /// Removes the photo of a slot (back to empty placeholder).
+  void clearSlot(int index) {
+    final slots = [..._report.slots];
+    if (index < 0 || index >= slots.length) return;
+    slots[index] = slots[index].copyWith(
+      clearFoto: true,
+      offset: Offset.zero,
+      scale: 1.0,
+    );
+    _report = _report.copyWith(slots: slots);
+    notifyListeners();
+  }
+
+  /// Exchanges the photos (including transforms) of two slots.
+  void swapSlots(int a, int b) {
+    final slots = [..._report.slots];
+    if (a < 0 || b < 0 || a >= slots.length || b >= slots.length || a == b) {
+      return;
+    }
+    final tmp = slots[a];
+    slots[a] = slots[b];
+    slots[b] = tmp;
+    _report = _report.copyWith(slots: slots);
+    notifyListeners();
+  }
+
+  /// Clears all slot photos (keeps template & caption).
+  void resetSlots() {
+    _report = _report.copyWith(
+      slots: List.generate(_report.slots.length, (_) => const SlotData()),
+    );
+    notifyListeners();
+  }
+
+  /// Number of slots that already contain a photo.
+  int get filledSlotCount =>
+      _report.slots.where((s) => !s.isEmpty).length;
 
   /// Starts a fresh report; [base] can be a duplicated previous report.
   void startNewReport({CollageReport? base}) {
