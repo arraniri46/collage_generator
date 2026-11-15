@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:collage_generator/core/data/templates/template_registry.dart';
@@ -6,7 +7,11 @@ import 'package:collage_generator/core/models/brand_profile.dart';
 import 'package:collage_generator/core/models/report_caption.dart';
 import 'package:collage_generator/core/models/slot_data.dart';
 import 'package:collage_generator/core/utils/date_formatter_id.dart';
+import 'package:collage_generator/features/editor/widgets/poster_canvas.dart';
 import 'package:collage_generator/main.dart';
+import 'package:provider/provider.dart';
+import 'package:collage_generator/providers/profile_provider.dart';
+import 'package:collage_generator/providers/report_provider.dart';
 
 void main() {
   group('TemplateRegistry', () {
@@ -91,6 +96,82 @@ void main() {
       expect(text, contains('11 November 2026'));
       expect(text, startsWith('Rabu'));
     });
+  });
+
+  testWidgets('PosterCanvas renders header, slots and footer', (tester) async {
+    final template = TemplateRegistry.byId('t8_reference')!;
+    final report = CollageReport(
+      id: 'r1',
+      judul: 'LAPORAN ATENSI',
+      tanggalLaporan: DateTime(2026, 11, 11),
+      templateId: template.id,
+      slots: List.generate(8, (_) => const SlotData()),
+    );
+    const profile = BrandProfile(
+      id: 'p1',
+      namaInstansi: 'Kementerian Hukum',
+      namaUnit: 'Kantor Wilayah Sumatera Utara',
+      websiteUrl: 'sumut.kemenkum.go.id',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 400,
+              child: PosterCanvas(
+                report: report,
+                template: template,
+                profile: profile,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Title and date render.
+    expect(find.text('LAPORAN ATENSI'), findsOneWidget);
+    expect(find.text('Rabu, 11 November 2026'), findsOneWidget);
+    // Website badge renders.
+    expect(find.text('sumut.kemenkum.go.id'), findsOneWidget);
+    // 8 slot placeholders render.
+    expect(
+      find.byIcon(Icons.photo_camera_rounded),
+      findsNWidgets(8),
+    );
+  });
+
+  testWidgets('Full flow: setup -> template picker -> poster preview',
+      (tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ProfileProvider()),
+          ChangeNotifierProvider(create: (_) => ReportProvider()),
+        ],
+        child: const CollageGeneratorApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Pick 8 photos.
+    await tester.tap(find.text('8'));
+    await tester.pumpAndSettle();
+
+    // Continue to template picker.
+    await tester.tap(find.text('Lanjut Pilih Template'));
+    await tester.pumpAndSettle();
+
+    // Pick the reference template.
+    await tester.tap(find.text('Laporan Atensi (Referensi)'));
+    await tester.pumpAndSettle();
+
+    // Poster preview shows with the title.
+    expect(find.text('Preview Poster'), findsOneWidget);
+    expect(find.text('LAPORAN ATENSI'), findsOneWidget);
   });
 
   testWidgets('App builds and shows setup screen', (tester) async {
