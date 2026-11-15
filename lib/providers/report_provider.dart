@@ -6,39 +6,111 @@ import '../core/models/collage_report.dart';
 import '../core/models/collage_template.dart';
 import '../core/models/report_caption.dart';
 import '../core/models/slot_data.dart';
+import '../core/services/local_storage_service.dart';
 
-/// Global state of the report being composed (setup → template → editor).
+/// Global state of the report being composed (setup → template → editor),
+/// with the in-progress draft persisted locally.
 class ReportProvider extends ChangeNotifier {
-  CollageReport _report = CollageReport(
-    id: DateTime.now().microsecondsSinceEpoch.toString(),
-    judul: 'LAPORAN ATENSI',
-    tanggalLaporan: DateTime.now(),
-  );
+  ReportProvider(this._storage);
+
+  final LocalStorageService _storage;
+
+  CollageReport _report = _freshReport();
+
+  /// Reports saved to history (JSON list in local storage).
+  final List<CollageReport> _history = [];
 
   CollageReport get report => _report;
 
+  List<CollageReport> get history => List.unmodifiable(_history);
+
   /// Currently selected template (resolved from [CollageReport.templateId]).
   CollageTemplate? get template => TemplateRegistry.byId(_report.templateId);
+
+  static CollageReport _freshReport() => CollageReport(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        judul: 'LAPORAN ATENSI',
+        tanggalLaporan: DateTime.now(),
+      );
+
+  /// Restores the persisted draft and history (if any); called once at app
+  /// startup.
+  Future<void> load() async {
+    final draft = _storage.loadDraftReport();
+    if (draft != null) {
+      _report = draft;
+    }
+    _history
+      ..clear()
+      ..addAll(_storage.loadHistory());
+    notifyListeners();
+  }
+
+  /// Moves the current draft into history (saved list) and starts fresh.
+  void saveToHistory() {
+    final saved = _report.copyWith(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      savedAt: DateTime.now(),
+    );
+    _history.insert(0, saved);
+    _storage.saveHistory(_history);
+    _report = _freshReport();
+    _storage.clearDraftReport();
+    notifyListeners();
+  }
+
+  /// Removes a saved report from history.
+  void removeFromHistory(String id) {
+    _history.removeWhere((r) => r.id == id);
+    _storage.saveHistory(_history);
+    notifyListeners();
+  }
+
+  /// Loads a saved report as the working draft (continue editing).
+  void continueReport(CollageReport saved) {
+    _report = saved.copyWith(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      savedAt: null,
+    );
+    _storage.clearDraftReport();
+    notifyListeners();
+  }
+
+  void _persist() {
+    _storage.saveDraftReport(_report);
+  }
+
+  /// Drops the persisted draft and starts a fresh report.
+  /// [base] can be a duplicated previous report.
+  void startNewReport({CollageReport? base}) {
+    _report = base ?? _freshReport();
+    _storage.clearDraftReport();
+    notifyListeners();
+  }
 
   // --- Setup screen ---
 
   void setJudul(String judul) {
     _report = _report.copyWith(judul: judul);
+    _persist();
     notifyListeners();
   }
 
   void setTanggal(DateTime date) {
     _report = _report.copyWith(tanggalLaporan: date);
+    _persist();
     notifyListeners();
   }
 
   void setCanvasRatio(CanvasRatio ratio) {
     _report = _report.copyWith(canvasRatio: ratio);
+    _persist();
     notifyListeners();
   }
 
   void setProfile(String? profileId) {
     _report = _report.copyWith(profileId: profileId);
+    _persist();
     notifyListeners();
   }
 
@@ -48,6 +120,7 @@ class ReportProvider extends ChangeNotifier {
       templateId: null,
       slots: List.generate(count, (_) => const SlotData()),
     );
+    _persist();
     notifyListeners();
   }
 
@@ -58,6 +131,7 @@ class ReportProvider extends ChangeNotifier {
   void selectTemplate(CollageTemplate template) {
     assert(template.slotCount == _report.slots.length);
     _report = _report.copyWith(templateId: template.id);
+    _persist();
     notifyListeners();
   }
 
@@ -65,6 +139,7 @@ class ReportProvider extends ChangeNotifier {
 
   void updateCaption(ReportCaption caption) {
     _report = _report.copyWith(caption: caption);
+    _persist();
     notifyListeners();
   }
 
@@ -80,6 +155,7 @@ class ReportProvider extends ChangeNotifier {
       scale: 1.0,
     );
     _report = _report.copyWith(slots: slots);
+    _persist();
     notifyListeners();
   }
 
@@ -89,6 +165,7 @@ class ReportProvider extends ChangeNotifier {
     if (index < 0 || index >= slots.length) return;
     slots[index] = slots[index].copyWith(offset: offset, scale: scale);
     _report = _report.copyWith(slots: slots);
+    _persist();
     notifyListeners();
   }
 
@@ -102,6 +179,7 @@ class ReportProvider extends ChangeNotifier {
       scale: 1.0,
     );
     _report = _report.copyWith(slots: slots);
+    _persist();
     notifyListeners();
   }
 
@@ -115,6 +193,7 @@ class ReportProvider extends ChangeNotifier {
     slots[a] = slots[b];
     slots[b] = tmp;
     _report = _report.copyWith(slots: slots);
+    _persist();
     notifyListeners();
   }
 
@@ -123,20 +202,11 @@ class ReportProvider extends ChangeNotifier {
     _report = _report.copyWith(
       slots: List.generate(_report.slots.length, (_) => const SlotData()),
     );
+    _persist();
     notifyListeners();
   }
 
   /// Number of slots that already contain a photo.
   int get filledSlotCount =>
       _report.slots.where((s) => !s.isEmpty).length;
-
-  /// Starts a fresh report; [base] can be a duplicated previous report.
-  void startNewReport({CollageReport? base}) {
-    _report = (base ?? CollageReport(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
-      judul: 'LAPORAN ATENSI',
-      tanggalLaporan: DateTime.now(),
-    ));
-    notifyListeners();
-  }
 }

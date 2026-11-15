@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:collage_generator/core/models/collage_report.dart';
 import 'package:collage_generator/core/models/slot_data.dart';
+import 'package:collage_generator/core/services/local_storage_service.dart';
 import 'package:collage_generator/features/editor/editor_screen.dart';
 import 'package:collage_generator/features/editor/photo_picker_service.dart';
 import 'package:collage_generator/providers/report_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Fake picker returning a fixed path without touching platform channels.
 final class _FakePickerService implements PhotoPickerService {
@@ -18,6 +20,14 @@ final class _FakePickerService implements PhotoPickerService {
       '/tmp/fake-photo.jpg';
 }
 
+/// Provider backed by an empty in-memory SharedPreferences instance.
+Future<ReportProvider> makeReportProvider() async {
+  SharedPreferences.setMockInitialValues({});
+  final storage = LocalStorageService(await SharedPreferences.getInstance());
+  return ReportProvider(storage);
+}
+
+
 
 CollageReport _reportWith8Slots() => CollageReport(
       id: 'r-test',
@@ -29,8 +39,9 @@ CollageReport _reportWith8Slots() => CollageReport(
 
 void main() {
   group('ReportProvider photo editor', () {
-    test('setSlotPhoto fills the slot and resets transform', () {
-      final provider = ReportProvider()..startNewReport(base: _reportWith8Slots());
+    test('setSlotPhoto fills the slot and resets transform', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
       provider.setSlotPhoto(2, '/tmp/photo.jpg');
 
       final slot = provider.report.slots[2];
@@ -41,8 +52,9 @@ void main() {
       expect(provider.filledSlotCount, 1);
     });
 
-    test('updateSlotTransform persists pan and zoom', () {
-      final provider = ReportProvider()..startNewReport(base: _reportWith8Slots());
+    test('updateSlotTransform persists pan and zoom', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
       provider.setSlotPhoto(0, '/tmp/a.jpg');
       provider.updateSlotTransform(0, const Offset(12, -4), 1.8);
 
@@ -51,8 +63,9 @@ void main() {
       expect(slot.scale, 1.8);
     });
 
-    test('swapSlots exchanges photos between slots', () {
-      final provider = ReportProvider()..startNewReport(base: _reportWith8Slots());
+    test('swapSlots exchanges photos between slots', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
       provider.setSlotPhoto(0, '/tmp/a.jpg');
       provider.setSlotPhoto(3, '/tmp/b.jpg');
       provider.updateSlotTransform(3, const Offset(5, 5), 2.0);
@@ -64,15 +77,17 @@ void main() {
       expect(provider.report.slots[3].fotoPath, '/tmp/a.jpg');
     });
 
-    test('swapSlots ignores invalid indices', () {
-      final provider = ReportProvider()..startNewReport(base: _reportWith8Slots());
+    test('swapSlots ignores invalid indices', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
       provider.setSlotPhoto(0, '/tmp/a.jpg');
       provider.swapSlots(0, 99);
       expect(provider.report.slots[0].fotoPath, '/tmp/a.jpg');
     });
 
-    test('clearSlot empties a single slot', () {
-      final provider = ReportProvider()..startNewReport(base: _reportWith8Slots());
+    test('clearSlot empties a single slot', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
       provider.setSlotPhoto(1, '/tmp/a.jpg');
       provider.clearSlot(1);
 
@@ -80,8 +95,9 @@ void main() {
       expect(provider.filledSlotCount, 0);
     });
 
-    test('resetSlots clears all slots but keeps the template', () {
-      final provider = ReportProvider()..startNewReport(base: _reportWith8Slots());
+    test('resetSlots clears all slots but keeps the template', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
       provider.setSlotPhoto(0, '/tmp/a.jpg');
       provider.setSlotPhoto(7, '/tmp/b.jpg');
       provider.resetSlots();
@@ -94,7 +110,7 @@ void main() {
 
   group('EditorScreen', () {
     Future<void> pumpEditor(WidgetTester tester) async {
-      final provider = ReportProvider()
+      final provider = await makeReportProvider()
         ..startNewReport(base: _reportWith8Slots());
 
       await tester.pumpWidget(
@@ -141,7 +157,7 @@ void main() {
     });
 
     testWidgets('tapping a filled slot shows photo options', (tester) async {
-      final provider = ReportProvider()
+      final provider = await makeReportProvider()
         ..startNewReport(base: _reportWith8Slots())
         ..setSlotPhoto(0, '/tmp/fake-photo.jpg');
 

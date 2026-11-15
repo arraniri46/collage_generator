@@ -30,6 +30,7 @@ final class CollageReport {
     this.slots = const [],
     this.caption = const ReportCaption(),
     this.profileId,
+    this.savedAt,
   });
 
   final String id;
@@ -51,6 +52,9 @@ final class CollageReport {
   /// Reference to [BrandProfile.id].
   final String? profileId;
 
+  /// When the report was saved to history; null while it's a draft.
+  final DateTime? savedAt;
+
   CollageReport copyWith({
     String? id,
     String? judul,
@@ -60,6 +64,7 @@ final class CollageReport {
     List<SlotData>? slots,
     ReportCaption? caption,
     String? profileId,
+    Object? savedAt = _unset,
   }) =>
       CollageReport(
         id: id ?? this.id,
@@ -70,7 +75,10 @@ final class CollageReport {
         slots: slots ?? this.slots,
         caption: caption ?? this.caption,
         profileId: profileId ?? this.profileId,
+        savedAt: identical(savedAt, _unset) ? this.savedAt : savedAt as DateTime?,
       );
+
+  static const _unset = Object();
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -81,6 +89,7 @@ final class CollageReport {
         'slots': slots.map((s) => s.toJson()).toList(),
         'caption': caption.toJson(),
         'profileId': profileId,
+        'savedAt': savedAt?.toIso8601String(),
       };
 
   static CollageReport fromJson(Map<String, dynamic> json) => CollageReport(
@@ -98,5 +107,8 @@ final class CollageReport {
             ? ReportCaption.fromJson(json['caption'] as Map<String, dynamic>)
             : const ReportCaption(),
         profileId: json['profileId'] as String?,
+        savedAt: json['savedAt'] != null
+            ? DateTime.parse(json['savedAt'] as String)
+            : null,
       );
 }

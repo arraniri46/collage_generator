@@ -73,13 +73,15 @@
 - [ ] (Opsional) atur gap & outer margin
 
 ### Fase 4 — Profile Instansi & Penyimpanan
-- [ ] Halaman Daftar Profile (card list, set default, hapus)
-- [ ] Halaman Form Profile:
+- [x] Halaman Daftar Profile (card list, set default, hapus)
+- [x] Halaman Form Profile:
   - Section poster: logo (image picker, disimpan lokal), nama instansi/unit, website, warna brand
   - Section config caption: judul, kepada Yth, dari, **tembusan list dinamis**
     (add/remove/reorder), pembuka, penutup BAB V, kota, jabatan & nama Ttd
-- [ ] Persistensi Hive/SharedPreferences: profile + draft laporan
-- [ ] Halaman Home: "+ Buat Laporan", Riwayat Laporan (thumbnail draft), akses Profile
+- [x] Persistensi SharedPreferences: profile + draft laporan + riwayat laporan
+  (`LocalStorageService` wrapper, provider DI via konstruktor + `..load()`)
+- [x] Halaman Home: "+ Buat Laporan", Riwayat Laporan (lanjutkan/hapus laporan
+  tersimpan via `saveToHistory`/`continueReport`/`removeFromHistory`), akses Profile
 - [ ] Splash: cek profile ada → redirect Home / setup profile pertama
 
 ### Fase 5 — Export & Share

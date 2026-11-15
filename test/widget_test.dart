@@ -6,12 +6,30 @@ import 'package:collage_generator/core/models/collage_report.dart';
 import 'package:collage_generator/core/models/brand_profile.dart';
 import 'package:collage_generator/core/models/report_caption.dart';
 import 'package:collage_generator/core/models/slot_data.dart';
+import 'package:collage_generator/core/services/local_storage_service.dart';
 import 'package:collage_generator/core/utils/date_formatter_id.dart';
 import 'package:collage_generator/features/editor/widgets/poster_canvas.dart';
 import 'package:collage_generator/main.dart';
 import 'package:provider/provider.dart';
 import 'package:collage_generator/providers/profile_provider.dart';
 import 'package:collage_generator/providers/report_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Pumps the app with providers backed by an empty in-memory storage.
+Future<void> _pumpApp(WidgetTester tester) async {
+  SharedPreferences.setMockInitialValues({});
+  final storage = LocalStorageService(await SharedPreferences.getInstance());
+  await tester.pumpWidget(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProfileProvider(storage)..load()),
+        ChangeNotifierProvider(create: (_) => ReportProvider(storage)..load()),
+      ],
+      child: CollageGeneratorApp(storage: storage),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
 
 void main() {
   group('TemplateRegistry', () {
@@ -146,16 +164,7 @@ void main() {
 
   testWidgets('Full flow: setup -> template picker -> poster preview',
       (tester) async {
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => ProfileProvider()),
-          ChangeNotifierProvider(create: (_) => ReportProvider()),
-        ],
-        child: const CollageGeneratorApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _pumpApp(tester);
 
     // From home, open the setup screen via the primary CTA.
     await tester.tap(find.text('Buat Laporan Baru'));
@@ -180,16 +189,7 @@ void main() {
 
   testWidgets('App builds and shows home with bottom navigation',
       (tester) async {
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => ProfileProvider()),
-          ChangeNotifierProvider(create: (_) => ReportProvider()),
-        ],
-        child: const CollageGeneratorApp(),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _pumpApp(tester);
 
     // Home tab is shown by default.
     expect(find.text('Buat Laporan Baru'), findsOneWidget);
