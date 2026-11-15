@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,13 +11,16 @@ import 'package:collage_generator/core/models/slot_data.dart';
 import 'package:collage_generator/core/services/local_storage_service.dart';
 import 'package:collage_generator/core/utils/date_formatter_id.dart';
 import 'package:collage_generator/features/editor/widgets/poster_canvas.dart';
+import 'package:collage_generator/features/profile/profile_form_screen.dart';
+import 'package:collage_generator/features/splash/splash_screen.dart';
 import 'package:collage_generator/main.dart';
 import 'package:provider/provider.dart';
 import 'package:collage_generator/providers/profile_provider.dart';
 import 'package:collage_generator/providers/report_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Pumps the app with providers backed by an empty in-memory storage.
+/// Pumps the app with providers backed by an in-memory storage and skips
+/// past the splash screen so tests start on the home shell.
 Future<void> _pumpApp(WidgetTester tester) async {
   SharedPreferences.setMockInitialValues({});
   final storage = LocalStorageService(await SharedPreferences.getInstance());
@@ -28,6 +33,9 @@ Future<void> _pumpApp(WidgetTester tester) async {
       child: CollageGeneratorApp(storage: storage),
     ),
   );
+  await tester.pumpAndSettle();
+  // Advance past the splash delay; navigation replaces it with HomeShell.
+  await tester.pump(const Duration(milliseconds: 1300));
   await tester.pumpAndSettle();
 }
 
@@ -208,5 +216,66 @@ void main() {
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
     expect(find.text('Profile Instansi'), findsOneWidget);
+  });
+
+  testWidgets('Splash routes to Home when profiles exist', (tester) async {
+    await _pumpApp(tester);
+
+    // Splash is shown first.
+    expect(find.text('Collage Generator'), findsOneWidget);
+
+    // Advance past the splash delay and settle the navigation.
+    await tester.pump(const Duration(milliseconds: 1300));
+    await tester.pumpAndSettle();
+
+    // Home is now on top; no profile form was pushed (samples exist).
+    expect(find.text('Buat Laporan Baru'), findsOneWidget);
+    expect(find.byType(ProfileFormScreen), findsNothing);
+  });
+
+  testWidgets('Splash opens profile form when no profile exists',
+      (tester) async {
+    // Storage pre-seeded with one profile that the app then loads. We
+    // remove it via the provider BEFORE the splash delay elapses (pump a
+    // single frame, not pumpAndSettle) so hasAnyProfile is false at
+    // navigation time.
+    final storedProfile = const BrandProfile(
+      id: 'p1',
+      namaInstansi: 'Instansi',
+      namaUnit: 'Unit',
+      websiteUrl: 'example.go.id',
+      jabatanTtd: 'Kepala',
+      namaTtd: 'Nama',
+    );
+    SharedPreferences.setMockInitialValues({
+      'profiles': jsonEncode([storedProfile.toJson()]),
+    });
+    final storage = LocalStorageService(await SharedPreferences.getInstance());
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+              create: (_) => ProfileProvider(storage)..load()),
+          ChangeNotifierProvider(create: (_) => ReportProvider(storage)..load()),
+        ],
+        child: CollageGeneratorApp(storage: storage),
+      ),
+    );
+    // One frame so load() completes, still within the splash delay.
+    await tester.pump();
+
+    final profileProvider = Provider.of<ProfileProvider>(
+      tester.element(find.byType(SplashScreen)),
+      listen: false,
+    );
+    profileProvider.remove('p1');
+    expect(profileProvider.hasAnyProfile, isFalse);
+
+    // Now let the splash delay elapse and navigation settle.
+    await tester.pump(const Duration(milliseconds: 1300));
+    await tester.pumpAndSettle();
+
+    // Home is pushed, and the profile form opens on top of it.
+    expect(find.byType(ProfileFormScreen), findsOneWidget);
   });
 }

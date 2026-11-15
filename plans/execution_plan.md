@@ -82,7 +82,11 @@
   (`LocalStorageService` wrapper, provider DI via konstruktor + `..load()`)
 - [x] Halaman Home: "+ Buat Laporan", Riwayat Laporan (lanjutkan/hapus laporan
   tersimpan via `saveToHistory`/`continueReport`/`removeFromHistory`), akses Profile
-- [ ] Splash: cek profile ada → redirect Home / setup profile pertama
+- [x] Splash: cek profile ada → redirect Home / setup profile pertama
+  (`SplashScreen` delay 1.2s → `pushReplacement(HomeShell)`; bila
+  `ProfileProvider.hasAnyProfile == false`, `ProfileFormScreen` dibuka di atas
+  Home. `HomeShell` dipindah dari `main.dart` ke
+  `lib/features/home/home_shell.dart` agar tidak circular import.)
 
 ### Fase 5 — Export & Share
 - [x] Halaman Export & Share: poster preview (render 400px → PNG 3x ≈ 1200px)

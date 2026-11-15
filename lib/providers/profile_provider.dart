@@ -20,6 +20,9 @@ class ProfileProvider extends ChangeNotifier {
 
   bool get isLoaded => _loaded;
 
+  /// True when at least one profile exists (used by splash routing).
+  bool get hasAnyProfile => _profiles.isNotEmpty;
+
   BrandProfile? get activeProfile {
     for (final p in _profiles) {
       if (p.id == _activeProfileId) return p;
