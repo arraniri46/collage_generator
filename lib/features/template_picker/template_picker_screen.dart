@@ -5,6 +5,7 @@ import '../../../core/data/templates/template_registry.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_logo.dart';
 import '../../../providers/report_provider.dart';
+import '../editor/poster_preview_screen.dart' as editor;
 import 'widgets/template_wireframe.dart';
 
 /// Step 2 of the flow: pick a layout template, filtered by photo count.
@@ -44,7 +45,11 @@ final class TemplatePickerScreen extends StatelessWidget {
             selected: selected,
             onTap: () {
               context.read<ReportProvider>().selectTemplate(template);
-              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute<void>(
+                  builder: (_) => const editor.PosterPreviewScreen(),
+                ),
+              );
             },
             child: TemplateWireframe(
               template: template,
