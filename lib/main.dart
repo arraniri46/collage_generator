@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/services/local_storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/date_formatter_id.dart';
 import 'features/editor/poster_preview_screen.dart';
 import 'features/home/history_tab.dart';
 import 'features/home/home_tab.dart';
@@ -14,6 +15,7 @@ import 'providers/report_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  DateFormatterId.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   runApp(CollageGeneratorApp(storage: LocalStorageService(prefs)));
 }
