@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:collage_generator/core/models/collage_report.dart';
+import 'package:collage_generator/core/models/report_caption.dart';
 import 'package:collage_generator/core/models/slot_data.dart';
 import 'package:collage_generator/core/services/local_storage_service.dart';
 import 'package:collage_generator/features/editor/editor_screen.dart';
@@ -105,6 +106,46 @@ void main() {
       expect(provider.filledSlotCount, 0);
       expect(provider.report.slots.length, 8);
       expect(provider.report.templateId, 't8_reference');
+    });
+
+    test('duplicateFromLastReport copies caption from history', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
+
+      // Save a report with a distinctive caption into history.
+      provider.updateCaption(
+        const ReportCaption(
+          kegiatan: 'Kegiatan lama',
+          peserta: ['Tim X'],
+          waktu: 'Pukul 08.00',
+          tempat: 'Ruang Lama',
+          uraianRaw: '1. Poin lama',
+        ),
+      );
+      provider.saveToHistory();
+
+      // Draft is fresh now; duplicate should restore the caption.
+      provider.duplicateFromLastReport();
+
+
+      expect(provider.report.caption.kegiatan, 'Kegiatan lama');
+      expect(provider.report.caption.peserta, ['Tim X']);
+      expect(provider.report.caption.waktu, 'Pukul 08.00');
+      expect(provider.report.caption.tempat, 'Ruang Lama');
+      expect(provider.report.caption.uraianRaw, '1. Poin lama');
+      // Only caption is copied; the fresh draft's template is untouched.
+      expect(provider.report.templateId,
+          isNot('t8_reference')); // fresh draft after saveToHistory
+    });
+
+    test('duplicateFromLastReport is a no-op with empty history', () async {
+      final provider = await makeReportProvider()
+        ..startNewReport(base: _reportWith8Slots());
+
+      provider.duplicateFromLastReport();
+
+      expect(provider.report.caption.kegiatan, '');
+      expect(provider.report.caption.peserta, isEmpty);
     });
   });
 
