@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'dart:ui' show Offset;
 
@@ -34,16 +36,33 @@ class ReportProvider extends ChangeNotifier {
       );
 
   /// Restores the persisted draft and history (if any); called once at app
-  /// startup.
+  /// startup. Slots whose photo file no longer exists on disk (e.g. cleared
+  /// cache) are reset to empty so the editor doesn't show ghost photos.
   Future<void> load() async {
     final draft = _storage.loadDraftReport();
     if (draft != null) {
-      _report = draft;
+      _report = _validateSlots(draft);
     }
     _history
       ..clear()
-      ..addAll(_storage.loadHistory());
+      ..addAll(
+        _storage.loadHistory().map(_validateSlots),
+      );
     notifyListeners();
+  }
+
+  /// Drops slot photos whose file is missing from disk.
+  CollageReport _validateSlots(CollageReport report) {
+    var changed = false;
+    final slots = report.slots.map((s) {
+      final path = s.fotoPath;
+      if (path != null && !File(path).existsSync()) {
+        changed = true;
+        return s.copyWith(clearFoto: true, offset: Offset.zero, scale: 1.0);
+      }
+      return s;
+    }).toList();
+    return changed ? report.copyWith(slots: slots) : report;
   }
 
   /// Moves the current draft into history (saved list) and starts fresh.
@@ -114,12 +133,25 @@ class ReportProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Sets the photo count: resets the template and reinitializes slots.
+  /// Sets the photo count: resets the template and resizes slots, keeping
+  /// already-picked photos where possible.
+  ///
+  /// - Same count → no-op (tapping the current chip must not wipe photos).
+  /// - Shrink → keeps the first [count] slots (with their photos).
+  /// - Grow → keeps existing slots, appends empty ones.
   void setSlotCount(int count) {
-    _report = _report.copyWith(
-      templateId: null,
-      slots: List.generate(count, (_) => const SlotData()),
-    );
+    if (count == _report.slots.length) return;
+    final oldSlots = _report.slots;
+    final kept = oldSlots.length > count
+        ? oldSlots.sublist(0, count)
+        : [
+            ...oldSlots,
+            ...List.generate(
+              count - oldSlots.length,
+              (_) => const SlotData(),
+            ),
+          ];
+    _report = _report.copyWith(templateId: null, slots: kept);
     _persist();
     notifyListeners();
   }

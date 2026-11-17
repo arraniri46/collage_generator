@@ -107,7 +107,7 @@ class _EditorSlotState extends State<EditorSlot> {
             File(widget.data.fotoPath!),
             fit: BoxFit.cover,
             gaplessPlayback: true,
-            errorBuilder: (_, _, _) => _buildPlaceholder(context),
+            errorBuilder: (_, _, _) => _buildBrokenPhoto(context),
           ),
         ),
         if (widget.onRemove != null)
@@ -147,6 +147,39 @@ class _EditorSlotState extends State<EditorSlot> {
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Tap untuk isi',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.onSurfaceMuted,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shown when the photo file cannot be loaded (e.g. the cached file was
+  /// cleared by the OS). Distinguished from an empty slot so the user knows
+  /// a photo *was* picked but is now missing — tap to re-pick.
+  Widget _buildBrokenPhoto(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.broken_image_rounded,
+            size: 28,
+            color: AppColors.accent,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Foto gagal dimuat',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.onSurfaceMuted,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Tap untuk pilih ulang',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: AppColors.onSurfaceMuted,
                 ),

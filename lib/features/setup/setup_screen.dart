@@ -27,6 +27,20 @@ class _SetupScreenState extends State<SetupScreen> {
     _judulController = TextEditingController(
       text: context.read<ReportProvider>().report.judul,
     );
+    // Ensure the report always has a profile attached (the dropdown's
+    // initialValue is visual-only) so caption sections are never blank.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final reportProvider = context.read<ReportProvider>();
+      final profileProvider = context.read<ProfileProvider>();
+      final current = reportProvider.report.profileId;
+      final valid = profileProvider.byId(current) != null;
+      if (!valid && profileProvider.profiles.isNotEmpty) {
+        reportProvider.setProfile(
+          profileProvider.activeProfile?.id ?? profileProvider.profiles.first.id,
+        );
+      }
+    });
   }
 
   @override

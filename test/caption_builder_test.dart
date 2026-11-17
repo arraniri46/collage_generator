@@ -70,20 +70,23 @@ void main() {
     test('composes header, sections I-V and signature', () {
       final text = CaptionBuilder.build(profile: profile, report: report);
 
-      expect(text, contains('LAPORAN ATENSI PIMPINAN'));
-      expect(text, contains('Tembusan:\n- Inspektur Jenderal'));
-      expect(text, contains('Kepada Yth. Bapak Sekretaris Jenderal'));
-      expect(text, contains('I. KEGIATAN'));
+      expect(text, contains('*LAPORAN ATENSI PIMPINAN*'));
+      expect(text, contains('Kepada Yth:\nBapak Sekretaris Jenderal'));
+      expect(text, contains('Dari:\nKepala Kantor Wilayah'));
+      expect(text, contains('Tembusan:\n1. Inspektur Jenderal;\n2. Arsip;'));
+      expect(text, contains('Dengan hormat.'));
+      expect(text, contains('*I. KEGIATAN*'));
       expect(text, contains('Pemeriksaan berkala'));
-      expect(text, contains('II. PESERTA'));
-      expect(text, contains('- Tim A'));
-      expect(text, contains('III. WAKTU & TEMPAT'));
-      expect(text, contains('Rabu, 11 November 2026'));
-      expect(text, contains('Waktu: Pukul 09.30 WIB s.d. selesai'));
-      expect(text, contains('IV. URAIAN KEGIATAN'));
+      expect(text, contains('*II. PESERTA KEGIATAN*'));
+      expect(text, contains('1. Tim A;\n2. Tim B;'));
+      expect(text, contains('*III. WAKTU DAN TEMPAT*'));
+      expect(text, contains('📌 Hari/Tanggal: Rabu, 11 November 2026'));
+      expect(text, contains('⏰ Waktu: Pukul 09.30 WIB s.d. selesai'));
+      expect(text, contains('📍 Tempat: Ruang Kerja Kepala Kantor Wilayah'));
+      expect(text, contains('*IV. URAIAN KEGIATAN*'));
       expect(text, contains('1. Poin pertama'));
       expect(text, contains('3. Poin ketiga'));
-      expect(text, contains('V. PENUTUP'));
+      expect(text, contains('*V. PENUTUP*'));
       expect(text, contains('Demikian laporan ini disampaikan.'));
       expect(text, contains('Medan, 11 November 2026'));
       expect(text, contains('Kepala Kantor Wilayah'));
@@ -92,8 +95,8 @@ void main() {
 
     test('falls back to placeholders when profile is null', () {
       final text = CaptionBuilder.build(profile: null, report: report);
-      expect(text, contains('LAPORAN ATENSI PIMPINAN'));
-      expect(text, contains('Kepada Yth. '));
+      expect(text, contains('*LAPORAN ATENSI PIMPINAN*'));
+      expect(text, contains('Kepada Yth:'));
     });
   });
 

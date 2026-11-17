@@ -83,7 +83,11 @@ class _CaptionEditorScreenState extends State<CaptionEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final report = context.watch<ReportProvider>().report;
-    final profile = context.watch<ProfileProvider>().byId(report.profileId);
+    // Defensive: fall back to the active profile if the stored profile id
+    // no longer resolves, so locked caption sections are never blank.
+    final profileProvider = context.watch<ProfileProvider>();
+    final profile =
+        profileProvider.byId(report.profileId) ?? profileProvider.activeProfile;
     final dateText = DateFormatterId.full(report.tanggalLaporan);
 
     return Scaffold(
@@ -100,6 +104,8 @@ class _CaptionEditorScreenState extends State<CaptionEditorScreen> {
                   label: 'Judul',
                   value: profile?.judulCaption ?? 'LAPORAN ATENSI PIMPINAN',
                 ),
+                LockedLine(label: 'Kepada Yth:', value: profile?.kepadaYth ?? '-'),
+                LockedLine(label: 'Dari:', value: profile?.dariLabel ?? '-'),
                 for (final t in profile?.tembusan ?? const <String>[])
                   LockedLine(label: 'Tembusan', value: t),
               ],

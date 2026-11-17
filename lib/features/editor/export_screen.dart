@@ -29,7 +29,11 @@ class _ExportScreenState extends State<ExportScreen> {
     final reportProvider = context.watch<ReportProvider>();
     final report = reportProvider.report;
     final template = reportProvider.template!;
-    final profile = context.watch<ProfileProvider>().byId(report.profileId);
+    // Defensive: fall back to the active profile if the stored profile id
+    // no longer resolves, so the composed caption is never blank.
+    final profileProvider = context.watch<ProfileProvider>();
+    final profile =
+        profileProvider.byId(report.profileId) ?? profileProvider.activeProfile;
     final caption = CaptionBuilder.build(profile: profile, report: report);
 
     return Scaffold(
